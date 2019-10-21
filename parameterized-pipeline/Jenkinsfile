@@ -1,0 +1,64 @@
+pipeline{
+    agent { label 'master_builds' }
+    
+    parameters {
+        string(name: 'branch', defaultValue: 'master', description: 'Enter the branch to run the tests from e.g. master')
+        string(name: 'environment', defaultValue: 'deve13', description: 'Enter environment name .e.g. deve13 tste13 tsth devh etc')
+        string(name: 'maven_lifecycle', defaultValue: 'mvn clean install', description: 'For single tests, run mvn "-Dtest=ProRataServiceSpec#Pro - Rata service sends an empty request" -Dbranch=tste13')
+    }
+    tools 
+    { 
+        maven 'Maven' 
+        jdk 'Java' 
+    }
+   
+    stages
+    {
+        stage ('Slack Notifier')
+        {
+          steps 
+          {
+            // send build started notifications
+            slackSend (color: '#FFFF00', message: "STARTED => JOB ::  '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+            echo 'Slack Notifier stage done...'  
+          }
+        } 
+        stage ('Checkout Script From Git')
+        {
+            steps
+            {
+                git url: 'git@github.com:esure-dev/api-spock-framework.git'
+                echo 'Checkout From Git....'  
+            }
+        }
+        stage('Build') 
+        {
+            steps
+            {
+                dir ('MTA')
+                {
+                    echo "Running with branch set to: ${params.branch}"
+                    echo "Running in environment : ${params.environment}"
+                    echo "Maven Lifecycle is : ${params.maven_lifecycle}"
+                    sh "${params.maven_lifecycle}"
+                    echo 'Build stage done...'
+                }  
+            }
+        }
+    }
+    post 
+    {
+        success
+        {
+            echo 'Result...'
+            echo 'SUCCESS'
+            slackSend (color: '#00FF00', message: "SUCCESSFUL => JOB ::  '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+        }
+        failure 
+        {
+            echo 'Result...'
+            echo 'FAILED'
+            slackSend (color: '#FF0000', message: "FAILED => JOB ::  '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+        }  
+    }
+}
