@@ -45,9 +45,9 @@ pipeline
                              echo "----- RUNNING AWS SCRIPTS ------"
                              # export AWS_SESSION_TOKEN = ${params.SESSION_TOKEN}
                              # export AWS_DEFAULT_REGION= ${params.REGION}
-                             export AWS_SESSION_TOKEN=FwoGZXIvYXdzEGIaDD7r4zJ/Mto7Sgso1iKGAaHfUKPiMHbTO5hVm23EitRo2hECK9QM/u1FMx8e4n9NjkHgGG9PcmpCH3C1Ph9Jvts7a15tl22w5SNP2KsBhiCYL/gOyaXUijEyO5H+uQjTdh27VhNWdU2I5IiTXN1KGJBiVUJrKPg9IwDD7Yd6uvc4zLE4pzmtRVM0IbANUMgxVqCTuh2BKPHzm/QFMig5glvSyvxBt7+xcjGz2tGOwCfCVngBS18hY63M2ZVLTJYL+3LcV2L0
+                             export AWS_SESSION_TOKEN=
                              export AWS_DEFAULT_REGION=eu-west-1
-                             trigger=`curl  --user "fca-jenkins-admin:c96d8e1c722444ada47f05303fac2524" $BUILD_URL/api/json`
+                             trigger=`curl  --user "jenkins-admin:c96dada47f05303fac2524" $BUILD_URL/api/json`
                              result=`echo $trigger | jq '.actions[0].causes[0].shortDescription'`
                              timestamp=$(date +%s)
                              if [[ $result =~ "timer" ]]; then
@@ -55,11 +55,11 @@ pipeline
                                   sed -i 's/fca-image-mysql/fca-mage-mysql-timer/g' /var/lib/jenkins/workspace/fca_demo_build/fca-image.yml
                                   sed -i "s/bitbucket/bitbucket${timestamp}/g" /var/lib/jenkins/workspace/fca_demo_build/fca-image.yml
                                   
-                                  aws cloudformation delete-stack --stack-name fca-image-build-timer
-                                  aws cloudformation wait stack-delete-complete --stack-name fca-image-build-timer
-                                  aws cloudformation deploy --template-file /var/lib/jenkins/workspace/fca_demo_build/fca-image.yml --stack-name fca-image-build-timer --capabilities CAPABILITY_IAM
+                                  aws cloudformation delete-stack --stack-name image-build-timer
+                                  aws cloudformation wait stack-delete-complete --stack-name image-build-timer
+                                  aws cloudformation deploy --template-file /var/lib/jenkins/workspace/fca_demo_build/image.yml --stack-name fca-image-build-timer --capabilities CAPABILITY_IAM
                             else
-                                  aws cloudformation deploy --template-file /var/lib/jenkins/workspace/fca_demo_build/fca-image.yml --stack-name fca-image-build --capabilities CAPABILITY_IAM
+                                  aws cloudformation deploy --template-file /var/lib/jenkins/workspace/fca_demo_build/image.yml --stack-name fca-image-build --capabilities CAPABILITY_IAM
                             fi
                           '''
                     }
